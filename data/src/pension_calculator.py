@@ -13,6 +13,6 @@ class PensionCalculator:
     def calculate_pension(inputs: PensionInputs) -> float:
         total_capital = inputs.account + inputs.initial_capital + inputs.subaccount
         if inputs.life_expectancy_months <= 0:
-            raise ValueError("Life expectancy must be greater than zero.")
+            raise ValueError("Oczekiwana długość życia musi być większa od zera.")
         return round(total_capital / inputs.life_expectancy_months, 2)
 

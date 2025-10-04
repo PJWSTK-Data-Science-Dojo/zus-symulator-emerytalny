@@ -6,6 +6,11 @@ from contextlib import asynccontextmanager
 from decimal import Decimal
 from fastapi.params import Depends
 from sqlalchemy import Enum
+from app.db.repositories.report import ReportRepository
+from app.schemas.auth import LoginRequest, RefreshRequest, TokenPair
+from app.schemas.report import ReportCreate, SimType
+from app.schemas.simulations import RetirementCalcInput, RetirementCalcOutput, RetirementExpectations, RetirementPlan
+import numpy as np
 from db import engine, Base, get_session, DATABASE_URL
 from pydantic import BaseModel, Field, ConfigDict, confloat, conint, condecimal
 from datetime import datetime, timedelta, timezone
@@ -13,7 +18,7 @@ from typing import Dict, Optional
 import uuid
 import os
 
-
+import statistics
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -31,35 +36,7 @@ from auth import (
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-class RetirementExpectations(BaseModel):
-    age: int = Field(..., ge=0, le=120)
-    sex: Literal["f", "m", "x"]
-    expected_retirement_income: float = Field(..., gt=0)
-    include_sick: bool
-    funds: float = Field(..., ge=0)
-    start_year: int = Field(..., ge=1900, le=2100)
-    expected_retirement_age: int = Field(..., ge=0, le=120)
-    
-class RetirementPlan(BaseModel):
-   model_config = ConfigDict(from_attributes=True)
-   expected_total_funds: float = Field(..., gt=0)
-   funds_left_to_collect: float = Field(..., gt=0)
-   
-   
-class WorkBlock(BaseModel):
-   model_config = ConfigDict(from_attributes=True)
-   years: float = Field(..., gt=0)
-   gross_income: float = Field(..., gt=0)
-   contribution_rate: float = Field(..., gt=0, le=1)
 
-class RetirementCalcInput(BaseModel):
-   model_config = ConfigDict(from_attributes=True)
-   work_blocks: list[WorkBlock]
-   
-class RetirementCalcOutput(BaseModel):
-   model_config = ConfigDict(from_attributes=True)
-   pension: float = Field(..., gt=0)
-   
    
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -86,30 +63,61 @@ async def read_root():
 
 @app.post("/generate_retirement_plan", response_model=RetirementPlan)
 async def retirement_plan(expectations: RetirementExpectations, db=Depends(get_session)):
+    
+    expected_total_funds = 100000
+    funds_left_to_collect = expected_total_funds / 2
+    
+    report_repo = ReportRepository(db)
+    
+    report_data = ReportCreate(
+        sim_type=SimType.EXPECTED,
+        age=expectations.age,
+        sex=expectations.sex,
+        expected_retirement_income=expectations.expected_retirement_income,
+        include_sick=expectations.include_sick,
+        funds=expectations.funds,
+        start_year=expectations.start_year,
+        expected_retirement_age=expectations.expected_retirement_age,
+        
+    )
+    new_report = await report_repo.create(report_data)
     return RetirementPlan(
-        expected_total_funds=100_000.,
-        total_funds=expectations.funds
+        expected_total_funds=expected_total_funds,
+        funds_left_to_collect=funds_left_to_collect,
     )
 
 @app.post("/calc_retirement_income", response_model=RetirementCalcOutput)
-async def calc_retirement_income(expectations: RetirementExpectations, db=Depends(get_session)):
+async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_session)):
+    actual_retirement_income = 4000.0
+    realistic_retirement_income = 4500.0
+    
+    salaries = [block.gross_income for block in data.work_blocks]
+    weights = [block.years for block in data.work_blocks]
+    weighted_avg = np.average(salaries, weights=weights)
+
+    report_repo = ReportRepository(db)
+    report_data = ReportCreate(
+        sim_type=SimType.HISTORY,
+        age=data.age,
+        sex=data.sex,
+        realistic_retirement_income=realistic_retirement_income,
+        actual_retirement_income=actual_retirement_income,
+        salary=weighted_avg
+    )
+    
+    new_report = await report_repo.create(report_data)
+
     return RetirementCalcOutput(
-        pension=4500.0
+        realistic_retirement_income=realistic_retirement_income,
+        actual_retirement_income=actual_retirement_income
     )
 
-class LoginRequest(BaseModel):
-    username: str
-    password: str
 
-class TokenPair(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
-    expires_in: int
-
-class RefreshRequest(BaseModel):
-    refresh_token: str
-
+@app.get("/reports", response_model=list[ReportCreate])
+async def get_reports(db=Depends(get_session), token: str = Depends(oauth2_scheme)):
+    require_admin_from_bearer(token)
+    report_repo = ReportRepository(db)
+    return await report_repo.get_all()
 
 @app.post("/token", response_model=TokenPair)
 def obtain_token_pair(credentials: LoginRequest):

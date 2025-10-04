@@ -1,14 +1,14 @@
-import unittest
-import tempfile
-import os
 import math
-import pandas as pd
+import os
+import tempfile
+import unittest
 
-from data.src.valorization_engine import (
+import pandas as pd
+from src.valorization_engine import (
     DataPaths,
     ForecastData,
-    ValorizationIndexBuilder,
     ValorizationEngine,
+    ValorizationIndexBuilder,
     ValorizationInputs,
 )
 
@@ -21,12 +21,14 @@ class TestValorizationEngine(unittest.TestCase):
 
         # revenues (contributions)
         # Years: 2024:100, 2025:120 (+20%), 2026:108 (-10% -> lower bound 1.0)
-        revenues_df = pd.DataFrame({
-            "rok": [2024, 2025, 2026],
-            "wariant_1": [100.0, 120.0, 108.0],
-            "wariant_2": [100.0, 120.0, 108.0],
-            "wariant_3": [100.0, 120.0, 108.0],
-        })
+        revenues_df = pd.DataFrame(
+            {
+                "rok": [2024, 2025, 2026],
+                "wariant_1": [100.0, 120.0, 108.0],
+                "wariant_2": [100.0, 120.0, 108.0],
+                "wariant_3": [100.0, 120.0, 108.0],
+            }
+        )
         self.revenues_path = os.path.join(td, "wplywy_skladkowe_mln_zl.csv")
         revenues_df.to_csv(self.revenues_path, index=False)
 
@@ -34,15 +36,17 @@ class TestValorizationEngine(unittest.TestCase):
         # Constant factors CPI=1.05 (105.0) i real GDP=1.02 (102.0)
         # for years 2020..2026, so that the sub-account has 5 previous years for 2025 and 2026
         macro_years = list(range(2020, 2027))
-        macro_df = pd.DataFrame({
-            "rok": macro_years,
-            "stopa_bezrobocia": [5.0] * len(macro_years),
-            "inflacja_ogolna": [105.0] * len(macro_years),          # -> cpi_factor = 1.05
-            "inflacja_emeryci": [105.0] * len(macro_years),
-            "realny_wzrost_wynagrodzen": [102.0] * len(macro_years),
-            "realny_wzrost_PKB": [102.0] * len(macro_years),        # -> real_gdp_factor = 1.02
-            "sciagalnosc_skladek": [99.0] * len(macro_years),
-        })
+        macro_df = pd.DataFrame(
+            {
+                "rok": macro_years,
+                "stopa_bezrobocia": [5.0] * len(macro_years),
+                "inflacja_ogolna": [105.0] * len(macro_years),  # -> cpi_factor = 1.05
+                "inflacja_emeryci": [105.0] * len(macro_years),
+                "realny_wzrost_wynagrodzen": [102.0] * len(macro_years),
+                "realny_wzrost_PKB": [102.0] * len(macro_years),  # -> real_gdp_factor = 1.02
+                "sciagalnosc_skladek": [99.0] * len(macro_years),
+            }
+        )
         # Save the same grid for 3 variants (we are not testing the differences between variants here)
         self.macro1_path = os.path.join(td, "parametry_makroekonomiczne_wariant_1.csv")
         self.macro2_path = os.path.join(td, "parametry_makroekonomiczne_wariant_2.csv")
@@ -95,15 +99,17 @@ class TestValorizationEngine(unittest.TestCase):
         """When the previous 5 years have nominal_gdp_factor < 1.0, the index should be 1.0 (floor)."""
         # We overwrite the variant_1 macro with a file with values ​​< 100 (i.e. < 1.0 after conversion)
         td = self.tmpdir.name
-        bad_macro_df = pd.DataFrame({
-            "rok": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
-            "stopa_bezrobocia": [5.0] * 7,
-            "inflacja_ogolna": [99.0] * 7,                # 0.99
-            "inflacja_emeryci": [99.0] * 7,
-            "realny_wzrost_wynagrodzen": [99.0] * 7,
-            "realny_wzrost_PKB": [99.0] * 7,              # 0.99
-            "sciagalnosc_skladek": [99.0] * 7,
-        })
+        bad_macro_df = pd.DataFrame(
+            {
+                "rok": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+                "stopa_bezrobocia": [5.0] * 7,
+                "inflacja_ogolna": [99.0] * 7,  # 0.99
+                "inflacja_emeryci": [99.0] * 7,
+                "realny_wzrost_wynagrodzen": [99.0] * 7,
+                "realny_wzrost_PKB": [99.0] * 7,  # 0.99
+                "sciagalnosc_skladek": [99.0] * 7,
+            }
+        )
         bad_macro_path = os.path.join(td, "parametry_makroekonomiczne_wariant_1_bad.csv")
         bad_macro_df.to_csv(bad_macro_path, index=False)
 

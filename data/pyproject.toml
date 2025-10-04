@@ -9,6 +9,7 @@ dependencies = [
     "ollama>=0.6.0",
     "openai>=2.1.0",
     "pandas>=2.3.3",
+    "pre-commit>=4.3.0",
     "pypdf>=6.1.1",
     "scikit-learn>=1.7.2",
 ]

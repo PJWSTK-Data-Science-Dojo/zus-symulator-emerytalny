@@ -1,9 +1,9 @@
 import unittest
-from data.src.pension_comparison import PensionComparison
+
+from src.pension_comparison import PensionComparison
 
 
 class TestPensionComparison(unittest.TestCase):
-
     def test_forecasted_higher_than_expected(self):
         result = PensionComparison.compare(expected=3000, forecasted=4000)
         self.assertEqual(result.expected, 3000)

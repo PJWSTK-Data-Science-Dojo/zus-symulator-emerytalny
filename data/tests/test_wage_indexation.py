@@ -1,9 +1,9 @@
-import unittest
-import tempfile
 import os
-import pandas as pd
+import tempfile
+import unittest
 
-from data.src.wage_indexation import WageIndexationEngine
+import pandas as pd
+from src.wage_indexation import WageIndexationEngine
 
 
 class TestWageIndexationEngine(unittest.TestCase):
@@ -12,10 +12,9 @@ class TestWageIndexationEngine(unittest.TestCase):
         self.tmpdir = tempfile.TemporaryDirectory()
         self.csv_path = os.path.join(self.tmpdir.name, "test_wages.csv")
 
-        df = pd.DataFrame({
-            "year": [2020, 2021, 2022, 2023],
-            "wage": [5000.00, 5500.00, 5000.00, 6000.00]
-        })
+        df = pd.DataFrame(
+            {"year": [2020, 2021, 2022, 2023], "wage": [5000.00, 5500.00, 5000.00, 6000.00]}
+        )
         df.to_csv(self.csv_path, index=False)
 
         self.engine = WageIndexationEngine(self.csv_path)

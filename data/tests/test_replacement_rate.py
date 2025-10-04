@@ -1,9 +1,9 @@
 import unittest
-from data.src.replacement_rate import ReplacementRateCalculator
+
+from src.replacement_rate import ReplacementRateCalculator
 
 
 class TestReplacementRateCalculator(unittest.TestCase):
-
     def test_low_replacement_rate(self):
         result = ReplacementRateCalculator.calculate(pension=2000, last_wage=8000)
         self.assertLess(result.rate_percent, 40)

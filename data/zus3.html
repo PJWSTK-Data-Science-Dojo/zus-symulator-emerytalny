@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jumping ASCII Letters</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 50px;
+            background: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: monospace;
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+        }
+        
+        .letter {
+            color: #00ff00;
+            white-space: pre;
+        }
+        
+        .letter:nth-child(1) {
+            animation: jump 1s infinite ease-in-out;
+            animation-delay: 0s;
+        }
+        
+        .letter:nth-child(2) {
+            animation: jump 1s infinite ease-in-out;
+            animation-delay: 0.2s;
+        }
+        
+        .letter:nth-child(3) {
+            animation: jump 1s infinite ease-in-out;
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes jump {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-50px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="letter">
+ZZZZZZZZZZZZZZZZZZZ
+Z:::::::::::::::::Z
+Z:::::::::::::::::Z
+Z:::ZZZZZZZZ:::::Z 
+ZZZZZ     Z:::::Z  
+        Z:::::Z    
+       Z:::::Z     
+      Z:::::Z      
+     Z:::::Z       
+    Z:::::Z        
+   Z:::::Z         
+ZZZ:::::Z     ZZZZZ
+Z::::::ZZZZZZZZ:::Z
+Z:::::::::::::::::Z
+Z:::::::::::::::::Z
+ZZZZZZZZZZZZZZZZZZZ
+</div>
+        <div class="letter">
+UUUUUUUU     UUUUUUUU
+U::::::U     U::::::U
+U::::::U     U::::::U
+UU:::::U     U:::::UU
+ U:::::U     U:::::U 
+ U:::::D     D:::::U 
+ U:::::D     D:::::U 
+ U:::::D     D:::::U 
+ U:::::D     D:::::U 
+ U:::::D     D:::::U 
+ U:::::D     D:::::U 
+ U::::::U   U::::::U 
+ U:::::::UUU:::::::U 
+  UU:::::::::::::UU  
+    UU:::::::::UU    
+      UUUUUUUUU      
+        </div>
+        <div class="letter">
+SSSSSSSSSSSSSSS 
+SS:::::::::::::::S
+S:::::SSSSSS::::::S
+S:::::S     SSSSSSS
+S:::::S            
+S:::::S            
+S::::SSSS         
+SS::::::SSSSS    
+    SSS::::::::SS  
+    SSSSSS::::S 
+            S:::::S
+            S:::::S
+SSSSSSS     S:::::S
+S::::::SSSSSS:::::S
+S:::::::::::::::SS 
+SSSSSSSSSSSSSSS   
+        </div>
+    </div>
+</body>
+</html>

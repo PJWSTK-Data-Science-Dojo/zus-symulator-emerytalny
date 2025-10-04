@@ -3,17 +3,17 @@ version: "3.9"
 services:
   db:
     image: postgres:16
-    container_name: ${COMPOSE_PROJECT_NAME}_db
+    container_name: zus_symulator_emerytalny_db
     environment:
-      POSTGRES_DB: ${COMPOSE_PROJECT_NAME}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: zus_symulator_emerytalny
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
-      - "${PG_PORT:-5432}:5432"
+      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d zus_symulator_emerytalny"]
       interval: 5s
       timeout: 5s
       retries: 10

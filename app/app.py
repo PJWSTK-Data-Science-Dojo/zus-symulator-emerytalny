@@ -1,29 +1,16 @@
-from datetime import datetime, datetime, timezone
-from typing import Literal, Self
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from decimal import Decimal
 from fastapi.params import Depends
-from sqlalchemy import Enum
-from app.db.repositories.report import ReportRepository
-from app.schemas.auth import LoginRequest, RefreshRequest, TokenPair
-from app.schemas.report import ReportCreate, SimType
-from app.schemas.simulations import RetirementCalcInput, RetirementCalcOutput, RetirementExpectations, RetirementPlan
+from db.repositories.report import ReportRepository
+from schemas.auth import RefreshRequest, TokenPair
+from schemas.report import ReportCreate
+from schemas.simulations import RetirementCalcInput, RetirementCalcOutput, RetirementExpectations, RetirementPlan
 import numpy as np
-from db import engine, Base, get_session, DATABASE_URL
-from pydantic import BaseModel, Field, ConfigDict, confloat, conint, condecimal
-from datetime import datetime, timedelta, timezone
-from typing import Dict, Optional
-import uuid
-import os
+from db import engine, Base, get_session
 
-import statistics
 from fastapi import FastAPI, HTTPException, Depends, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 
 load_dotenv()  # załaduj zmienne środowiskowe z pliku .env (jeśli istnieje)
@@ -70,7 +57,7 @@ async def retirement_plan(expectations: RetirementExpectations, db=Depends(get_s
     report_repo = ReportRepository(db)
     
     report_data = ReportCreate(
-        sim_type=SimType.EXPECTED,
+        sim_type="RETIRE_PLAN",
         age=expectations.age,
         sex=expectations.sex,
         expected_retirement_income=expectations.expected_retirement_income,
@@ -97,7 +84,7 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
 
     report_repo = ReportRepository(db)
     report_data = ReportCreate(
-        sim_type=SimType.HISTORY,
+        sim_type="PENSION_CALC",
         age=data.age,
         sex=data.sex,
         realistic_retirement_income=realistic_retirement_income,
@@ -120,12 +107,19 @@ async def get_reports(db=Depends(get_session), token: str = Depends(oauth2_schem
     return await report_repo.get_all()
 
 @app.post("/token", response_model=TokenPair)
-def obtain_token_pair(credentials: LoginRequest):
-    if not authenticate_admin(credentials.username, credentials.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Błędny login lub hasło")
+def obtain_token_pair(form_data: OAuth2PasswordRequestForm = Depends()):
+    username = form_data.username
+    password = form_data.password
+
+    if not authenticate_admin(username, password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Błędny login lub hasło",
+        )
+
     return TokenPair(
-        access_token=create_access_token(credentials.username),
-        refresh_token=create_refresh_token(credentials.username),
+        access_token=create_access_token(username),
+        refresh_token=create_refresh_token(username),
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 

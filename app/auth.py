@@ -53,6 +53,7 @@ def verify_password(plain: str, password_hash: str) -> bool:
 
 
 def authenticate_admin(username: str, password: str) -> bool:
+    
     if username != ADMIN_USERNAME:
         return False
     return verify_password(password, ADMIN_PASSWORD_HASH)
@@ -115,4 +116,5 @@ def require_admin_from_bearer(token: str) -> str:
         return sub
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token nieprawidłowy lub wygasł")
+
 

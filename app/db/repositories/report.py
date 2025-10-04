@@ -1,6 +1,5 @@
 
-
-from select import select
+from sqlalchemy import select
 from db.model.report import Report
 from schemas.report import ReportCreate, ReportOut
 from sqlalchemy.ext.asyncio import AsyncSession

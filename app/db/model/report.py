@@ -4,13 +4,14 @@ import enum
 from db.base import Base
 
 class SimType(str, enum.Enum):
-    EXPECTED = "EXPECTED"  # Plan emerytalny na podstawie oczekiwań
-    HISTORY = "HISTORY"    # Kalkulator emeytalny od historii zarobków
+    RETIRE_PLAN = "RETIRE_PLAN"  # Plan emerytalny na podstawie oczekiwań
+    PENSION_CALC = "PENSION_CALC"    # Kalkulator emerytalny od historii zarobków
 
-class Gender(str, enum.Enum):
-    K = "K"
-    M = "M"
-    
+class Sex(str, enum.Enum):
+    F = "f"
+    M = "m"
+    X = "x"
+
 class Report(Base):
     __tablename__ = "reports"
 
@@ -20,7 +21,7 @@ class Report(Base):
     # Metadane
     sim_type = Column(Enum(SimType), nullable=False)
     age = Column(Integer, nullable=False)
-    gender = Column(Enum(Gender), nullable=False)
+    sex = Column(Enum(Sex), nullable=False)
     salary = Column(Float, nullable=True)
     sick_leave = Column(Boolean, default=False, nullable=False)
 

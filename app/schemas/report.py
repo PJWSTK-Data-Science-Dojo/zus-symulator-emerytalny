@@ -1,22 +1,14 @@
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict
 from enum import Enum
 
-# Te same enumy co w modelu
-class SimType(str, Enum):
-    EXPECTED = "EXPECTED"  # Plan emerytalny na podstawie oczekiwań
-    HISTORY = "HISTORY"    # Kalkulator emerytalny od historii zarobków
-
-class Gender(str, Enum):
-    K = "K"
-    M = "M"
 
 # --- Base ---
 class ReportBase(BaseModel):
-    sim_type: SimType
+    sim_type: Literal["RETIRE_PLAN", "PENSION_CALC"]
     age: int
-    gender: Gender
+    sex: Literal["f", "m", "x"]
     sick_leave: bool = False
 
     salary: Optional[float] = None
@@ -34,18 +26,7 @@ class ReportCreate(ReportBase):
 
 # --- Update (partial) ---
 class ReportUpdate(BaseModel):
-    sim_type: Optional[SimType] = None
-    age: Optional[int] = None
-    gender: Optional[Gender] = None
-    salary: Optional[float] = None
-    sick_leave: Optional[bool] = None
-
-    accumulated_funds: Optional[float] = None
-    postal_code: Optional[str] = None
-
-    expected_retirement_income: Optional[float] = None
-    actual_retirement_income: Optional[float] = None
-    realistic_retirement_income: Optional[float] = None
+    pass
 
 # --- Read / Out ---
 class ReportOut(ReportBase):

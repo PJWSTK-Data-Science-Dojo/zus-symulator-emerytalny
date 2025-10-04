@@ -12,7 +12,7 @@ class TestPensionCalculator(unittest.TestCase):
         inputs = PensionInputs(300000, 100000, 50000, 0)
         result = PensionCalculator.calculate_pension(inputs)
         self.assertEqual(result, 7500)  # 450000 / 60 = 7500
-        
+
     def test_old_people(self):
         inputs = PensionInputs(300000, 100000, 50000, 30)
         result = PensionCalculator.calculate_pension(inputs)

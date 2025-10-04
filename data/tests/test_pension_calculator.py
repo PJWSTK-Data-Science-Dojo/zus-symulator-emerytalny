@@ -1,6 +1,7 @@
 import unittest
 from data.src.pension_calculator import PensionInputs, PensionCalculator
 
+
 class TestPensionCalculator(unittest.TestCase):
     def test_basic_case(self):
         inputs = PensionInputs(300000, 100000, 50000, 240)
@@ -9,9 +10,14 @@ class TestPensionCalculator(unittest.TestCase):
 
     def test_zero_life_expectancy(self):
         inputs = PensionInputs(300000, 100000, 50000, 0)
-        with self.assertRaises(ValueError):
-            PensionCalculator.calculate_pension(inputs)
+        result = PensionCalculator.calculate_pension(inputs)
+        self.assertEqual(result, 7500)  # 450000 / 60 = 7500
+        
+    def test_old_people(self):
+        inputs = PensionInputs(300000, 100000, 50000, 30)
+        result = PensionCalculator.calculate_pension(inputs)
+        self.assertEqual(result, 7500)  # 450000 / 60 = 7500
+
 
 if __name__ == "__main__":
     unittest.main()
-

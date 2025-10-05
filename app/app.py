@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi.params import Depends
 from jose import JWTError
 from pydantic import BaseModel
+from app.data.functionalities.sick_leave_adjustment import SickLeaveAdjustment
 from db.repositories.report import ReportRepository
 from schemas.auth import RefreshRequest, TokenPair
 from schemas.report import ReportCreate, ReportOut
@@ -55,9 +56,12 @@ async def read_root():
 
 @app.post("/generate_retirement_plan", response_model=RetirementPlan)
 async def retirement_plan(expectations: RetirementExpectations, db=Depends(get_session)):
-    
-    expected_total_funds = 100000
-    funds_left_to_collect = expected_total_funds / 2
+
+    expected_life_expectancy_years = 82 if expectations.sex == "f" else 78
+    years_to_collect = expected_life_expectancy_years -expectations.expected_retirement_age
+    months_to_collect = max(60, years_to_collect * 12)
+    total_funds = expectations.expected_retirement_income * months_to_collect
+    funds_left_to_collect = max(0, total_funds - expectations.funds)
     
     report_repo = ReportRepository(db)
     
@@ -70,11 +74,10 @@ async def retirement_plan(expectations: RetirementExpectations, db=Depends(get_s
         funds=expectations.funds,
         start_year=expectations.start_year,
         expected_retirement_age=expectations.expected_retirement_age,
-        
     )
     new_report = await report_repo.create(report_data)
     return RetirementPlan(
-        expected_total_funds=expected_total_funds,
+        expected_total_funds=total_funds,
         funds_left_to_collect=funds_left_to_collect,
     )
 
@@ -97,7 +100,8 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
     months_to_live = max(60, life_expectancy_years - retirement_age) * 12
 
     year_of_retirement = datetime.now().year + (data.age - retirement_age)
-    
+    total_capital = SickLeaveAdjustment.calculate(
+        total_capital)
     inp = PensionInputs(
         life_expectancy_months=months_to_live,
         total_capital=total_capital,

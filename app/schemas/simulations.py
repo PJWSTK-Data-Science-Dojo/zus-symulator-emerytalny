@@ -6,7 +6,6 @@ class RetirementExpectations(BaseModel):
     age: int = Field(..., ge=0, le=120)
     sex: Literal["f", "m", "x"]
     expected_retirement_income: float = Field(..., gt=0)
-    include_sick: bool
     funds: float = Field(..., ge=0)
     start_year: int = Field(..., ge=1900, le=2100)
     expected_retirement_age: int = Field(..., ge=0, le=120)
@@ -27,6 +26,8 @@ class RetirementCalcInput(BaseModel):
    model_config = ConfigDict(from_attributes=True)
    age: int = Field(..., ge=0, le=120)
    sex: Literal["f", "m", "x"]
+   include_sick: bool
+   
    work_blocks: list[WorkBlock]
    
 class RetirementCalcOutput(BaseModel):

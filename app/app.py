@@ -105,7 +105,7 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
 
     months_to_live = max(60, life_expectancy_years - retirement_age) * 12
 
-    year_of_retirement = datetime.now().year + (data.age - retirement_age)
+    year_of_retirement = datetime.now().year + (retirement_age - data.age)
     total_capital = SickLeaveAdjustment().calculate(total_capital).adjusted_pension
 
     actual_retirement_income = PensionCalculator.calculate_pension(months_to_live, total_capital)

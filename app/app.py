@@ -10,6 +10,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError
 from pydantic import BaseModel
 
+from app.data.functionalities.inflation_projection import InflationProjection
 from data.functionalities.fun_facts import FunFacts
 from data.functionalities.pension_calculator import PensionCalculator
 from data.functionalities.pension_delay import PensionDelayCalculator
@@ -123,6 +124,7 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
     sick_salary = SickLeaveAdjustment().calculate(actual_retirement_income).adjusted_pension
 
     new_report = await report_repo.create(report_data)
+    inflation_rate = InflationProjection.cumulative_inflation(start_year=datetime.now().year,end_year=year_of_retirement, variant=2 )
     result = {
         "actual_pension": actual_retirement_income,
         "realistic_pension": realistic_retirement_income,
@@ -135,6 +137,7 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
             monthly_contribution=weighted_avg * 0.195,  # 19.5% składka emerytalna
             life_expectancy_months=months_to_live,
         ),
+        "inflation_rate": inflation_rate,
     }
 
     return result

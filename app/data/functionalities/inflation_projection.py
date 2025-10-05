@@ -4,8 +4,12 @@ from typing import Literal
 Variant = Literal[1, 2, 3]
 
 class InflationProjection:
-    def __init__(self, macro_paths: dict[Variant, str]):
-        self.macro_paths = macro_paths # dict np. {1: 'data/parametry_makroekonomiczne_wariant_1.csv', ...}
+    def __init__(self):
+        self.macro_paths = {
+            1: "data/dane_emerytalne/parametry_makroekonomiczne_wariant_1.csv",
+            2: "data/dane_emerytalne/parametry_makroekonomiczne_wariant_2.csv",
+            3: "data/dane_emerytalne/parametry_makroekonomiczne_wariant_3.csv"
+        }
         self._data = {}
 
     def load_data(self, variant: Variant) -> pd.DataFrame:

@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi.params import Depends
 from jose import JWTError
 from pydantic import BaseModel
+from app.data.functionalities.pension_delay import PensionDelayCalculator
 from data.functionalities.sick_leave_adjustment import SickLeaveAdjustment
 from db.repositories.report import ReportRepository
 from schemas.auth import RefreshRequest, TokenPair
@@ -107,10 +108,10 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
         total_capital=total_capital,
     )
     
-    realistic_retirement_income = PensionCalculator.calculate_pension(inp)
-    
-    actual_retirement_income = realistic_retirement_income * 0.6
+    actual_retirement_income = PensionCalculator.calculate_pension(inp)
 
+    realistic_retirement_income = actual_retirement_income * 0.6
+    replacement_rate = (realistic_retirement_income / weighted_avg) * 100 if weighted_avg > 0 else 0
     report_repo = ReportRepository(db)
     report_data = ReportCreate(
         sim_type="PENSION_CALC",
@@ -120,13 +121,24 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
         actual_retirement_income=actual_retirement_income,
         salary=weighted_avg
     )
+    sick_salary = SickLeaveAdjustment.calculate(actual_retirement_income)
     
     new_report = await report_repo.create(report_data)
-
-    return RetirementCalcOutput(
-        realistic_retirement_income=realistic_retirement_income,
-        actual_retirement_income=actual_retirement_income
-    )
+    result = {
+		"actual_pension": actual_retirement_income,
+		"realistic_pension": realistic_retirement_income,
+		"replacement_rate": replacement_rate,
+		"average_pension": 4045.20,
+		"salary_with_sickness": sick_salary,
+		"salary_without_sickness": actual_retirement_income,
+		"pension_increase": PensionDelayCalculator.calculate_pension_delay(
+            base_capital=total_capital,
+            monthly_contribution=weighted_avg*0.195, # 19.5% składka emerytalna
+            life_expectancy_months=months_to_live,
+        )
+	}
+ 
+    return result
 
 
 @app.get("/reports", response_model=list[ReportOut])

@@ -1,9 +1,15 @@
 from dataclasses import dataclass
 from typing import Dict
 
-@dataclass
-class PensionDelayResult:
-    pensions: Dict[int, float]   # np. {0: 2083, 1: 2324, 2: 2500, 5: 3100}
+from pydantic import BaseModel, ConfigDict
+
+class Delay(BaseModel):
+    years: int
+    pension: float
+
+class PensionDelayResult(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    pensions: list[Delay]
 
 
 class PensionDelayCalculator:
@@ -11,15 +17,15 @@ class PensionDelayCalculator:
     def calculate_pension_delay(
         base_capital: float, #initial accumulated capital (PLN)
         monthly_contribution: float, #current monthly contribution added to account (PLN)
-        annual_valorization: float, #yearly valorization rate, e.g. 0.03 = 3%
         life_expectancy_months: int, #remaining life expectancy at normal retirement age (months)
+        annual_valorization: float=0.03, #yearly valorization rate, e.g. 0.03 = 3%
         delays: list = [0, 1, 2, 5] #list of delays in years to evaluate (default: [0,1,2,5])
     ) -> PensionDelayResult:
         """
         Calculate pension amounts depending on delay in retirement.
         """
 
-        results = {}
+        results = []
         for d in delays:
             # Start with base capital
             capital = base_capital
@@ -34,6 +40,6 @@ class PensionDelayCalculator:
 
             # Calculate pension
             pension = capital / months if months > 0 else 0
-            results[d] = round(pension, 2)
+            results.append(Delay(years=d, pension=round(pension, 2)))
 
         return PensionDelayResult(pensions=results)

@@ -11,7 +11,7 @@ from jose import JWTError
 from pydantic import BaseModel
 
 from data.functionalities.fun_facts import FunFacts
-from data.functionalities.pension_calculator import PensionCalculator, PensionInputs
+from data.functionalities.pension_calculator import PensionCalculator
 from data.functionalities.pension_delay import PensionDelayCalculator
 from data.functionalities.sick_leave_adjustment import SickLeaveAdjustment
 from db import Base, engine, get_session
@@ -88,7 +88,7 @@ async def retirement_plan(expectations: RetirementExpectations, db=Depends(get_s
     )
 
 
-@app.post("/calc_retirement_income", response_model=RetirementCalcOutput)
+@app.post("/calc_retirement_income")
 async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_session)):
     salaries = [block.gross_income for block in data.work_blocks]
     weights = [block.years for block in data.work_blocks]
@@ -105,13 +105,9 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
     months_to_live = max(60, life_expectancy_years - retirement_age) * 12
 
     year_of_retirement = datetime.now().year + (data.age - retirement_age)
-    total_capital = SickLeaveAdjustment.calculate(total_capital)
-    inp = PensionInputs(
-        life_expectancy_months=months_to_live,
-        total_capital=total_capital,
-    )
+    total_capital = SickLeaveAdjustment().calculate(total_capital).adjusted_pension
 
-    actual_retirement_income = PensionCalculator.calculate_pension(inp)
+    actual_retirement_income = PensionCalculator.calculate_pension(months_to_live, total_capital)
 
     realistic_retirement_income = actual_retirement_income * 0.6
     replacement_rate = (realistic_retirement_income / weighted_avg) * 100 if weighted_avg > 0 else 0
@@ -124,7 +120,7 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
         actual_retirement_income=actual_retirement_income,
         salary=weighted_avg,
     )
-    sick_salary = SickLeaveAdjustment.calculate(actual_retirement_income)
+    sick_salary = SickLeaveAdjustment().calculate(actual_retirement_income).adjusted_pension
 
     new_report = await report_repo.create(report_data)
     result = {

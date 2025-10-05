@@ -1,5 +1,5 @@
 import unittest
-from data.src.pension_profiles import PensionProfile, PensionProfiles
+from data.functionalities.pension_profiles import PensionProfile, PensionProfiles
 
 class TestPensionProfiles(unittest.TestCase):
 

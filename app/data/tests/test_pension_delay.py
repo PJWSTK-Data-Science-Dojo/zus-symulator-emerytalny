@@ -1,6 +1,6 @@
 import unittest
 
-from src.pension_delay import PensionDelayCalculator
+from functionalities.pension_delay import PensionDelayCalculator
 
 
 class TestPensionDelayCalculator(unittest.TestCase):

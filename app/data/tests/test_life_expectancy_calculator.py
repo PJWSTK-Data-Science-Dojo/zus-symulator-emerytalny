@@ -4,7 +4,7 @@ import sys
 import os
 from unittest.mock import patch
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from data.src.life_expectancy_calculator import LifeExpectancyCalculator
+from data.functionalities.life_expectancy_calculator import LifeExpectancyCalculator
 
 class TestLifeExpectancyCalculator(unittest.TestCase):
 

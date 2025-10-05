@@ -4,7 +4,7 @@ import tempfile
 import unittest
 
 import pandas as pd
-from src.valorization_engine import (
+from functionalities.valorization_engine import (
     DataPaths,
     ForecastData,
     ValorizationEngine,

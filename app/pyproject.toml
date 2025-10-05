@@ -20,4 +20,7 @@ dependencies = [
     "python-multipart>=0.0.20",
     "sqlalchemy>=2.0.43",
     "uvicorn[standard]>=0.37.0",
+    "openai>=2.1.0",
+    "pandas>=2.3.3",
+    "pre-commit>=4.3.0",
 ]

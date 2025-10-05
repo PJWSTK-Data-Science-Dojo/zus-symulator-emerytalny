@@ -2,7 +2,7 @@ import os
 import sys
 import unittest
 
-from src.pension_scenarios import ForecastVariant, PensionCalculator
+from functionalities.pension_scenarios import ForecastVariant, PensionCalculator
 
 
 class TestPensionCalculator(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from src.pension_calculator import PensionCalculator, PensionInputs
+from functionalities.pension_calculator import PensionCalculator, PensionInputs
 
 
 class TestPensionCalculator(unittest.TestCase):

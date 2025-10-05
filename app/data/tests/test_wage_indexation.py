@@ -3,7 +3,7 @@ import tempfile
 import unittest
 
 import pandas as pd
-from src.wage_indexation import WageIndexationEngine
+from functionalities.wage_indexation import WageIndexationEngine
 
 
 class TestWageIndexationEngine(unittest.TestCase):

@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -14,6 +15,8 @@ from db import engine, Base, get_session
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
+from data.functionalities.fun_facts import FunFacts
+from data.functionalities.pension_calculator import PensionCalculator, PensionInputs
 
 load_dotenv()  # załaduj zmienne środowiskowe z pliku .env (jeśli istnieje)
 
@@ -77,12 +80,32 @@ async def retirement_plan(expectations: RetirementExpectations, db=Depends(get_s
 
 @app.post("/calc_retirement_income", response_model=RetirementCalcOutput)
 async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_session)):
-    actual_retirement_income = 4000.0
-    realistic_retirement_income = 4500.0
+    
     
     salaries = [block.gross_income for block in data.work_blocks]
     weights = [block.years for block in data.work_blocks]
     weighted_avg = np.average(salaries, weights=weights)
+    total_capital = sum(block.gross_income * block.contribution_rate * block.years * 12 for block in data.work_blocks)
+    
+    if data.sex == "f":
+        life_expectancy_years = 82
+        retirement_age = 60
+    else:
+        life_expectancy_years = 78
+        retirement_age = 65
+        
+    months_to_live = max(60, life_expectancy_years - retirement_age) * 12
+
+    year_of_retirement = datetime.now().year + (data.age - retirement_age)
+    
+    inp = PensionInputs(
+        life_expectancy_months=months_to_live,
+        total_capital=total_capital,
+    )
+    
+    realistic_retirement_income = PensionCalculator.calculate_pension(inp)
+    
+    actual_retirement_income = realistic_retirement_income * 0.6
 
     report_repo = ReportRepository(db)
     report_data = ReportCreate(
@@ -138,3 +161,8 @@ def refresh_tokens(req: RefreshRequest):
         refresh_token=refresh,
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
+
+@app.get("/fun_fact")
+def get_fun_fact():
+    fact = FunFacts.get_random_fact()
+    return {"fun_fact": fact}

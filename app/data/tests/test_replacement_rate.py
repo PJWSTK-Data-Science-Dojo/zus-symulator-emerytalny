@@ -1,6 +1,6 @@
 import unittest
 
-from src.replacement_rate import ReplacementRateCalculator
+from functionalities.replacement_rate import ReplacementRateCalculator
 
 
 class TestReplacementRateCalculator(unittest.TestCase):

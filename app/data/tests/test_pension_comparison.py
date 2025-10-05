@@ -1,6 +1,6 @@
 import unittest
 
-from src.pension_comparison import PensionComparison
+from functionalities.pension_comparison import PensionComparison
 
 
 class TestPensionComparison(unittest.TestCase):

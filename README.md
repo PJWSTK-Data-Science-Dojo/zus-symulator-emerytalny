@@ -1,25 +1,32 @@
-███████╗██╗   ██╗███████╗
-╚══███╔╝██║   ██║██╔════╝
-  ███╔╝ ██║   ██║███████╗
- ███╔╝  ██║   ██║╚════██║
-███████╗╚██████╔╝███████║
-╚══════╝ ╚═════╝ ╚══════╝
+RUN EVERYTHING FROM `data` dir
 
-Parametry ogólne:
-- Płeć
-- Twój wiek
-- Planowany wiek emerytury
-- Realny roczny wzrost wynagrodzeń
-- Oczekiwana długość życia -> długość życia
-- Populacja kraju -> tendencja demograficzna
-- Inflacja
-- Płaca minimalna / przeciętne wynagrodzenie -> tendencja
+Install pre-commit
+```
+pre-commit install
+pre-commit install-hooks
+```
 
-Praca:
-- Efektywna stopa składki emerytalnej
-- Jaka umowa
-- Okres pracy
-- Jakie wynagrodzenie brutto
-- Czy praca specjalna (13, 14, dla panstwa itp)
-- Czy student
-lub Okres bezskładkowy
+Create venv
+```
+uv venv
+```
+
+Add package
+```
+uv add <package>
+```
+
+Sync (after adding, lock, ...)
+```
+uv sync
+```
+
+Run tests
+```
+python -m scripts.run_tests
+```
+
+Run test
+```
+python -m scripts.run_tests <path-to-test-file>
+```

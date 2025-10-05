@@ -82,6 +82,12 @@ def create_refresh_token(sub: str) -> str:
 def decode_token(token: str) -> dict:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
+def decode_access_token(token: str) -> dict:
+    payload = decode_token(token)
+    if payload.get("type") != "access":
+        raise JWTError("Nieprawidłowy typ tokena (oczekiwano access)")
+    return payload
+
 
 def refresh_pair(old_refresh_token: str) -> tuple[str, str]:
     """Stateless odświeżenie: weryfikuje ważność/typ i wystawia *nowe* tokeny.
@@ -114,7 +120,21 @@ def require_admin_from_bearer(token: str) -> str:
         if sub != ADMIN_USERNAME:
             raise HTTPException(status_code=403, detail="Brak uprawnień")
         return sub
-    except JWTError:
+    except JWTError as e:
+        print("Token decode error:", e)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token nieprawidłowy lub wygasł")
+
+def validate_access_token(token: str) -> str:
+    try:
+        payload = decode_access_token(token)
+        if payload.get("type") != "access":
+            raise HTTPException(status_code=401, detail="Nieprawidłowy typ tokena")
+        sub = payload.get("sub")
+        if sub != ADMIN_USERNAME:
+            raise HTTPException(status_code=403, detail="Brak uprawnień")
+        return sub
+    except JWTError as e:
+        print("Token decode error:", e)
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token nieprawidłowy lub wygasł")
 
 

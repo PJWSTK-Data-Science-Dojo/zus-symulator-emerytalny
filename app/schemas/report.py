@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Literal, Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_serializer
 from enum import Enum
 
 
@@ -34,3 +34,8 @@ class ReportOut(ReportBase):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+    
+    @field_serializer('created_at')
+    def serialize_created_at(self, value: datetime, _info):
+        # format: "YYYY-MM-DD HH:MM:SS"
+        return value.strftime("%Y-%m-%d %H:%M:%S")

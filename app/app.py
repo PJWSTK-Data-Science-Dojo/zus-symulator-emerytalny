@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from fastapi.params import Depends
+from jose import JWTError
+from pydantic import BaseModel
 from db.repositories.report import ReportRepository
 from schemas.auth import RefreshRequest, TokenPair
-from schemas.report import ReportCreate
+from schemas.report import ReportCreate, ReportOut
 from schemas.simulations import RetirementCalcInput, RetirementCalcOutput, RetirementExpectations, RetirementPlan
 import numpy as np
 from db import engine, Base, get_session
@@ -17,7 +19,7 @@ load_dotenv()  # załaduj zmienne środowiskowe z pliku .env (jeśli istnieje)
 
 from auth import (
     ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_admin, create_access_token, create_refresh_token,
-    refresh_pair, require_admin_from_bearer
+    refresh_pair, require_admin_from_bearer,decode_token, decode_access_token
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -100,26 +102,27 @@ async def calc_retirement_income(data: RetirementCalcInput, db=Depends(get_sessi
     )
 
 
-@app.get("/reports", response_model=list[ReportCreate])
-async def get_reports(db=Depends(get_session), token: str = Depends(oauth2_scheme)):
-    require_admin_from_bearer(token)
+@app.get("/reports", response_model=list[ReportOut])
+async def get_reports(db=Depends(get_session)):
     report_repo = ReportRepository(db)
     return await report_repo.get_all()
 
-@app.post("/token", response_model=TokenPair)
-def obtain_token_pair(form_data: OAuth2PasswordRequestForm = Depends()):
-    username = form_data.username
-    password = form_data.password
+class LoginModel(BaseModel):
+    username: str
+    password: str
 
-    if not authenticate_admin(username, password):
+@app.post("/token", response_model=TokenPair)
+def obtain_token_pair(form_data: LoginModel):
+    print("Obtaining token pair for user:", form_data.username)
+    if not authenticate_admin(form_data.username, form_data.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Błędny login lub hasło",
         )
 
     return TokenPair(
-        access_token=create_access_token(username),
-        refresh_token=create_refresh_token(username),
+        access_token=create_access_token(form_data.username),
+        refresh_token=create_refresh_token(form_data.username),
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
@@ -135,9 +138,3 @@ def refresh_tokens(req: RefreshRequest):
         refresh_token=refresh,
         expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
-
-
-@app.get("/me")
-def me(token: str = Depends(oauth2_scheme)):
-    admin = require_admin_from_bearer(token)
-    return {"role": "admin", "username": admin}

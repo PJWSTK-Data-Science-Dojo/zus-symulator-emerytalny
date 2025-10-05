@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi.params import Depends
 from jose import JWTError
 from pydantic import BaseModel
-from app.data.functionalities.pension_delay import PensionDelayCalculator
+from data.functionalities.pension_delay import PensionDelayCalculator
 from data.functionalities.sick_leave_adjustment import SickLeaveAdjustment
 from db.repositories.report import ReportRepository
 from schemas.auth import RefreshRequest, TokenPair

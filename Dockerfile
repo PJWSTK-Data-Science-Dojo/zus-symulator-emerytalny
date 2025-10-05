@@ -4,7 +4,7 @@ FROM python:3.12.3-slim
 WORKDIR /app
 
 # Copy the application files
-COPY app .
+COPY app /app
 
 # Install dependencies
 RUN pip install --no-cache-dir --upgrade pip \
